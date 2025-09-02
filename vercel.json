@@ -2,6 +2,8 @@
   "buildCommand": "npm install && npm run build",
   "outputDirectory": "build",
   "framework": "create-react-app",
+  "installCommand": "npm install",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./",
   "rewrites": [
     {
       "source": "/(.*)",
