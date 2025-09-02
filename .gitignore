@@ -1,36 +1,27 @@
 # Dependencies
 node_modules/
-backend/node_modules/
+/.pnp
+.pnp.js
 
-# Production builds
-build/
-dist/
+# Testing
+/coverage
 
-# Environment variables
-.env
-backend/.env
+# Production
+/build
+
+# Misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Logs
-*.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# IDE files
-.vscode/
-.idea/
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# Database
-*.db
-*.sqlite
+# Backend
+backend/node_modules/
+backend/.env
+backend/build/
