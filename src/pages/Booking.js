@@ -94,8 +94,6 @@ const Booking = () => {
     setLoading(true);
     
     try {
-
-
       const selectedTherapy = therapies.find(t => t.name === formData.therapy || t._id === formData.therapy);
       const bookingData = {
         practitioner: formData.practitioner,
@@ -103,7 +101,7 @@ const Booking = () => {
         date: formData.date,
         time: formData.timeSlot,
         duration: selectedTherapy?.durations?.[0]?.minutes || selectedTherapy?.duration || 60,
-        price: calculatePrice(),
+        amount: calculatePrice(),
         notes: formData.notes
       };
 
@@ -127,7 +125,6 @@ const Booking = () => {
       [e.target.name]: e.target.value
     });
   };
-
 
 
   return (

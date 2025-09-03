@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PRICING_DATA } from '../constants';
 import GlobalHeader from '../components/common/GlobalHeader';
@@ -6,7 +6,6 @@ import GlobalFooter from '../components/common/GlobalFooter';
 
 const Pricing = () => {
   const navigate = useNavigate();
-  // Removed unused variables
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ayur-light via-white to-ayur-accent/20">
