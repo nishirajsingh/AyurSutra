@@ -15,6 +15,22 @@
   ],
   "routes": [
     {
+      "src": "/api/auth/(.*)",
+      "dest": "/api/auth.js"
+    },
+    {
+      "src": "/api/bookings/(.*)",
+      "dest": "/api/bookings.js"
+    },
+    {
+      "src": "/api/practitioners/(.*)",
+      "dest": "/api/practitioners.js"
+    },
+    {
+      "src": "/api/therapies/(.*)",
+      "dest": "/api/therapies.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/index.js"
     },
