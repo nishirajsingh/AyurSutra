@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
 
@@ -286,6 +287,31 @@ exports.getDashboardStats = async (req, res, next) => {
         }
       });
 
+      // Calculate monthly revenue from completed bookings
+      const monthlyRevenue = await Booking.aggregate([
+        {
+          $match: {
+            practitioner: new mongoose.Types.ObjectId(userId),
+            status: 'completed',
+            date: {
+              $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+              $lt: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
+            }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$amount' }
+          }
+        }
+      ]);
+
+      // Get practitioner's current rating
+      const practitioner = await User.findById(userId);
+      const avgRating = practitioner.rating || 0;
+      const totalRatings = practitioner.totalRatings || 0;
+
       const recentBookings = await Booking.find({ practitioner: userId })
         .populate('patient', 'name age gender')
         .sort({ date: -1 })
@@ -295,6 +321,9 @@ exports.getDashboardStats = async (req, res, next) => {
         totalPatients,
         todayBookings,
         monthlyBookings,
+        monthlyRevenue: monthlyRevenue[0]?.total || 0,
+        avgRating: Number(avgRating.toFixed(1)),
+        totalRatings,
         recentBookings
       };
     }

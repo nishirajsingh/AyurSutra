@@ -13,8 +13,7 @@ const bookingSchema = new mongoose.Schema({
   },
   therapy: {
     type: String,
-    required: true,
-    enum: ['Abhyanga', 'Shirodhara', 'Panchakarma', 'Nasya', 'Basti']
+    required: true
   },
   date: {
     type: Date,

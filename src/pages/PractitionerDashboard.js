@@ -49,13 +49,21 @@ const PractitionerDashboard = () => {
       fetchPatients();
     };
     
+    const handleFeedbackUpdate = () => {
+      fetchDashboardStats();
+      fetchBookings();
+      fetchPatients();
+    };
+    
     window.addEventListener('focus', handleFocus);
     window.addEventListener('bookingCreated', handleBookingCreated);
+    window.addEventListener('feedbackSubmitted', handleFeedbackUpdate);
     
     return () => {
       clearInterval(interval);
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('bookingCreated', handleBookingCreated);
+      window.removeEventListener('feedbackSubmitted', handleFeedbackUpdate);
     };
   }, [navigate]);
 
@@ -153,8 +161,8 @@ const PractitionerDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-purple-100 text-sm">Avg Rating</p>
-                    <p className="text-3xl font-bold">4.8</p>
-                    <p className="text-purple-100 text-sm">⭐⭐⭐⭐⭐</p>
+                    <p className="text-3xl font-bold">{dashboardStats?.avgRating || '0.0'}</p>
+                    <p className="text-purple-100 text-sm">{dashboardStats?.totalRatings || 0} reviews</p>
                   </div>
                   <div className="text-4xl opacity-80">🏆</div>
                 </div>
@@ -236,6 +244,44 @@ const PractitionerDashboard = () => {
               </div>
             )}
             
+            {/* Recent Feedback */}
+            {bookings.filter(b => b.feedback).length > 0 && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+                <h3 className="text-lg font-semibold text-ayur-primary mb-4">
+                  Recent Feedback ({bookings.filter(b => b.feedback).length})
+                </h3>
+                <div className="space-y-3">
+                  {bookings.filter(b => b.feedback).slice(0, 3).map((booking) => (
+                    <div key={booking._id} className="p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <span className="font-semibold text-gray-900">{booking.patient?.name}</span>
+                            <div className="flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <span key={i} className={`text-sm ${
+                                  i < booking.feedback.rating ? 'text-yellow-400' : 'text-gray-300'
+                                }`}>
+                                  ⭐
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-700 mb-1">{booking.therapy}</p>
+                          {booking.feedback.comment && (
+                            <p className="text-sm text-gray-600 italic">"{booking.feedback.comment}"</p>
+                          )}
+                          <p className="text-xs text-gray-500 mt-2">
+                            {new Date(booking.feedback.submittedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <div className="grid lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
                 <CalendarView bookings={bookings} />
@@ -247,11 +293,13 @@ const PractitionerDashboard = () => {
           </div>
         );
       case 'calendar':
-        return <CalendarView />;
+        return <CalendarView bookings={bookings} />;
       case 'patients':
         return <PatientList patients={patients} />;
       case 'insights':
-        return <InsightsPanel />;
+        return <InsightsPanel dashboardStats={dashboardStats} bookings={bookings} patients={patients} />;
+      case 'insights':
+        return <InsightsPanel dashboardStats={dashboardStats} bookings={bookings} patients={patients} />;
       default:
         return <div className="card">Dashboard</div>;
     }
@@ -265,13 +313,13 @@ const PractitionerDashboard = () => {
         onItemClick={setActiveItem}
       />
       <div className="flex-1 flex flex-col min-w-0">
-        <Header title="Practitioner Dashboard" userType="practitioner" onLogout={handleLogout} />
+        <Header title={`Dr. ${JSON.parse(localStorage.getItem('user') || '{}').name || 'Practitioner'} Dashboard`} userType="practitioner" onLogout={handleLogout} />
         <main className="flex-1 p-4 overflow-auto">
           <div className="max-w-full">
             <div className="mb-4 flex justify-between items-center">
               <div>
                 <h2 className="text-xl font-bold text-ayur-primary mb-1">
-                  Good morning, Doctor!
+                  Good morning, Dr. {JSON.parse(localStorage.getItem('user') || '{}').name || 'Doctor'}!
                 </h2>
                 <p className="text-sm text-gray-600">
                   Ayurveda Specialist • Manage your practice and help patients

@@ -15,7 +15,7 @@ const app = express();
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://your-domain.com'] 
-    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    : ['http://localhost:3000', 'http://localhost:3004', 'http://127.0.0.1:3000', 'http://127.0.0.1:3004'],
   credentials: true
 }));
 // Session middleware

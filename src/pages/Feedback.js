@@ -1,24 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/common/Card';
 import GlobalHeader from '../components/common/GlobalHeader';
 import GlobalFooter from '../components/common/GlobalFooter';
+import api from '../services/api';
 
 const Feedback = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     rating: 0,
-    symptoms: '',
-    suggestions: ''
+    comment: '',
+    bookingId: ''
   });
+  const [completedBookings, setCompletedBookings] = useState([]);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    fetchCompletedBookings();
+  }, []);
+
+  const fetchCompletedBookings = async () => {
+    try {
+      const response = await api.get('/bookings/my?status=completed');
+      const bookings = response.data.data?.bookings || [];
+      setCompletedBookings(bookings.filter(b => !b.feedback));
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      navigate('/patient');
-    }, 2000);
+    
+    if (!formData.bookingId) {
+      alert('Please select a session to review');
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      await api.put(`/bookings/${formData.bookingId}/feedback`, {
+        rating: formData.rating,
+        comment: formData.comment
+      });
+      
+      setSubmitted(true);
+      window.dispatchEvent(new Event('feedbackSubmitted'));
+      
+      setTimeout(() => {
+        navigate('/patient');
+      }, 2000);
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to submit feedback');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -55,6 +93,24 @@ const Feedback = () => {
 
         
         <Card title="Session Feedback" className="animate-slide-up">
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Session to Review
+            </label>
+            <select
+              value={formData.bookingId}
+              onChange={(e) => setFormData({...formData, bookingId: e.target.value})}
+              required
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ayur-primary focus:border-transparent"
+            >
+              <option value="">Choose a completed session</option>
+              {completedBookings.map(booking => (
+                <option key={booking._id} value={booking._id}>
+                  {booking.therapy} - {booking.practitioner?.name} - {new Date(booking.date).toLocaleDateString()}
+                </option>
+              ))}
+            </select>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -81,28 +137,14 @@ const Feedback = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Symptoms Update
+                Your Comments
               </label>
               <textarea
-                name="symptoms"
-                value={formData.symptoms}
+                name="comment"
+                value={formData.comment}
                 onChange={handleChange}
                 rows="4"
-                placeholder="How are you feeling after the session? Any changes in symptoms?"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ayur-primary focus:border-transparent resize-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Suggestions for Improvement
-              </label>
-              <textarea
-                name="suggestions"
-                value={formData.suggestions}
-                onChange={handleChange}
-                rows="3"
-                placeholder="Any suggestions to improve your treatment experience?"
+                placeholder="How was your session? Share your experience..."
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ayur-primary focus:border-transparent resize-none"
               />
             </div>
@@ -110,7 +152,7 @@ const Feedback = () => {
             <button
               type="submit"
               className="w-full bg-ayur-primary hover:bg-ayur-secondary text-white py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              disabled={formData.rating === 0}
+              disabled={formData.rating === 0 || loading}
             >
               Submit Feedback
             </button>

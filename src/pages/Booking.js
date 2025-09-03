@@ -228,7 +228,7 @@ const Booking = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Fee:</span>
-                        <span className="font-medium">₹1500</span>
+                        <span className="font-medium">₹{practitioner.consultationFee || 1500}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Rating:</span>

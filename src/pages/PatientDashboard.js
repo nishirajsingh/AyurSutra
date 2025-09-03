@@ -33,6 +33,18 @@ const PatientDashboard = () => {
     fetchPractitioners();
     fetchTherapies();
     fetchNotifications();
+    
+    // Listen for real-time feedback updates
+    const handleFeedbackUpdate = () => {
+      fetchDashboardData();
+      fetchBookings();
+    };
+    
+    window.addEventListener('feedbackSubmitted', handleFeedbackUpdate);
+    
+    return () => {
+      window.removeEventListener('feedbackSubmitted', handleFeedbackUpdate);
+    };
   }, [navigate]);
 
   const fetchDashboardData = async () => {
@@ -262,14 +274,29 @@ const PatientDashboard = () => {
                     <div className="text-right">
                       <p className="font-medium">{new Date(booking.date).toLocaleDateString()}</p>
                       <p className="text-sm text-gray-600">{booking.time}</p>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                        booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        booking.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {booking.status}
-                      </span>
+                      <div className="flex flex-col items-end space-y-1">
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                          booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          booking.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {booking.status}
+                        </span>
+                        {booking.status === 'completed' && !booking.feedback && (
+                          <button
+                            onClick={() => navigate('/feedback')}
+                            className="text-xs bg-ayur-primary text-white px-2 py-1 rounded hover:bg-ayur-secondary transition-colors"
+                          >
+                            Give Feedback
+                          </button>
+                        )}
+                        {booking.feedback && (
+                          <span className="text-xs text-green-600 flex items-center">
+                            ⭐ {booking.feedback.rating}/5
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )) : (
@@ -354,9 +381,23 @@ const PatientDashboard = () => {
         <Header title="Patient Dashboard" userType="patient" onLogout={handleLogout} />
         <main className="flex-1 p-4 overflow-auto">
           <div className="max-w-full">
-            <div className="mb-4">
-              <h2 className="text-xl font-bold text-ayur-primary mb-1">Welcome back!</h2>
-              <p className="text-sm text-gray-600">Track your wellness journey and manage your sessions</p>
+            <div className="mb-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold text-ayur-primary mb-1">Welcome back, {JSON.parse(localStorage.getItem('user') || '{}').name || 'Patient'}!</h2>
+                <p className="text-sm text-gray-600">Track your wellness journey and manage your sessions</p>
+              </div>
+              <button
+                onClick={() => {
+                  fetchDashboardData();
+                  fetchBookings();
+                  fetchPractitioners();
+                  fetchTherapies();
+                  fetchNotifications();
+                }}
+                className="px-4 py-2 bg-ayur-primary text-white rounded-lg hover:bg-ayur-secondary transition-colors duration-200 text-sm"
+              >
+                🔄 Refresh
+              </button>
             </div>
             {renderContent()}
           </div>

@@ -39,6 +39,7 @@ const SignUp = () => {
     
     setIsLoading(true);
     
+    console.log('API URL:', process.env.REACT_APP_API_URL);
     console.log('Submitting registration data:', {
       name: `${formData.firstName} ${formData.lastName}`,
       email: formData.email,
@@ -56,7 +57,11 @@ const SignUp = () => {
         dateOfBirth: formData.dateOfBirth
       };
 
-      if (userType === 'patient' && formData.gender) {
+      if (userType === 'patient') {
+        if (!formData.gender) {
+          alert('Please select gender for patient registration');
+          return;
+        }
         userData.gender = formData.gender;
       }
 
@@ -64,7 +69,7 @@ const SignUp = () => {
         userData.specialization = formData.specialization;
         userData.experience = parseInt(formData.experience);
         userData.qualification = formData.license;
-        userData.consultationFee = 1000;
+        userData.consultationFee = 1500;
       }
 
       const response = await authAPI.register(userData);

@@ -3,6 +3,8 @@ import Card from '../common/Card';
 
 const CalendarView = ({ bookings = [] }) => {
   const [viewType, setViewType] = useState('weekly');
+  const [currentWeek, setCurrentWeek] = useState(0);
+  const [currentMonth, setCurrentMonth] = useState(0);
   
   const timeSlots = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00'];
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -10,19 +12,40 @@ const CalendarView = ({ bookings = [] }) => {
 
   return (
     <Card title="Calendar View">
-      <div className="mb-4 flex space-x-2">
-        <button 
-          onClick={() => setViewType('weekly')}
-          className={`px-4 py-2 rounded ${viewType === 'weekly' ? 'bg-ayur-primary text-white' : 'bg-gray-200'}`}
-        >
-          Weekly
-        </button>
-        <button 
-          onClick={() => setViewType('monthly')}
-          className={`px-4 py-2 rounded ${viewType === 'monthly' ? 'bg-ayur-primary text-white' : 'bg-gray-200'}`}
-        >
-          Monthly
-        </button>
+      <div className="mb-4 flex justify-between items-center">
+        <div className="flex space-x-2">
+          <button 
+            onClick={() => setViewType('weekly')}
+            className={`px-4 py-2 rounded ${viewType === 'weekly' ? 'bg-ayur-primary text-white' : 'bg-gray-200'}`}
+          >
+            Weekly
+          </button>
+          <button 
+            onClick={() => setViewType('monthly')}
+            className={`px-4 py-2 rounded ${viewType === 'monthly' ? 'bg-ayur-primary text-white' : 'bg-gray-200'}`}
+          >
+            Monthly
+          </button>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => viewType === 'weekly' ? setCurrentWeek(currentWeek - 1) : setCurrentMonth(currentMonth - 1)}
+            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            ←
+          </button>
+          <span className="text-sm font-medium">
+            {viewType === 'weekly' ? `Week ${currentWeek === 0 ? 'Current' : currentWeek > 0 ? `+${currentWeek}` : currentWeek}` : 
+             `Month ${currentMonth === 0 ? 'Current' : currentMonth > 0 ? `+${currentMonth}` : currentMonth}`}
+          </span>
+          <button 
+            onClick={() => viewType === 'weekly' ? setCurrentWeek(currentWeek + 1) : setCurrentMonth(currentMonth + 1)}
+            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            →
+          </button>
+        </div>
       </div>
       
       {viewType === 'weekly' ? (
@@ -38,6 +61,7 @@ const CalendarView = ({ bookings = [] }) => {
               {weekDays.map((day, dayIndex) => {
                 const today = new Date();
                 const currentWeekStart = new Date(today.setDate(today.getDate() - today.getDay() + 1));
+                currentWeekStart.setDate(currentWeekStart.getDate() + (currentWeek * 7));
                 const dayDate = new Date(currentWeekStart);
                 dayDate.setDate(currentWeekStart.getDate() + dayIndex);
                 
@@ -54,8 +78,8 @@ const CalendarView = ({ bookings = [] }) => {
                         booking.status === 'pending' ? 'bg-yellow-500' :
                         booking.status === 'completed' ? 'bg-blue-500' :
                         'bg-gray-500'
-                      }`}>
-                        {(booking.therapy || booking.therapyType || 'Session').substring(0, 8)}
+                      }`} title={`${booking.patient?.name} - ${booking.therapy} - ₹${booking.amount}`}>
+                        {booking.patient?.name?.substring(0, 8) || 'Patient'}
                       </div>
                     ))}
                   </div>
