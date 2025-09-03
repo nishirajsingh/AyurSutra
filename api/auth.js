@@ -1,1 +1,66 @@
-module.exports = (req, res) => {\n  res.setHeader('Access-Control-Allow-Credentials', true);\n  res.setHeader('Access-Control-Allow-Origin', '*');\n  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');\n  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');\n\n  if (req.method === 'OPTIONS') {\n    res.status(200).end();\n    return;\n  }\n\n  const { url, method } = req;\n\n  // Register endpoint\n  if (url.includes('/register') && method === 'POST') {\n    const { name, email, password, role } = req.body || {};\n    const mockUser = {\n      _id: Date.now().toString(),\n      name: name || 'User',\n      email: email || 'user@example.com',\n      role: role || 'patient',\n      createdAt: new Date()\n    };\n    return res.status(201).json({\n      success: true,\n      token: 'mock_token_' + Date.now(),\n      data: { user: mockUser }\n    });\n  }\n\n  // Login endpoint\n  if (url.includes('/login') && method === 'POST') {\n    const { email, password } = req.body || {};\n    const mockUser = {\n      _id: '123',\n      name: 'Test User',\n      email: email || 'test@example.com',\n      role: 'patient'\n    };\n    return res.status(200).json({\n      success: true,\n      token: 'mock_token_login',\n      data: { user: mockUser }\n    });\n  }\n\n  // Get me endpoint\n  if (url.includes('/me') && method === 'GET') {\n    const mockUser = {\n      _id: '123',\n      name: 'Test User',\n      email: 'test@example.com',\n      role: 'patient'\n    };\n    return res.status(200).json({\n      success: true,\n      data: { user: mockUser }\n    });\n  }\n\n  res.status(404).json({ success: false, message: 'Auth endpoint not found' });\n};
+module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  try {
+    const { url, method } = req;
+
+    // Register endpoint
+    if (url.includes('/register') && method === 'POST') {
+      const { name, email, password, role } = req.body || {};
+      const mockUser = {
+        _id: Date.now().toString(),
+        name: name || 'User',
+        email: email || 'user@example.com',
+        role: role || 'patient',
+        createdAt: new Date()
+      };
+      return res.status(201).json({
+        success: true,
+        token: 'mock_token_' + Date.now(),
+        data: { user: mockUser }
+      });
+    }
+
+    // Login endpoint
+    if (url.includes('/login') && method === 'POST') {
+      const { email, password } = req.body || {};
+      const mockUser = {
+        _id: '123',
+        name: 'Test User',
+        email: email || 'test@example.com',
+        role: 'patient'
+      };
+      return res.status(200).json({
+        success: true,
+        token: 'mock_token_login',
+        data: { user: mockUser }
+      });
+    }
+
+    // Get me endpoint
+    if (url.includes('/me') && method === 'GET') {
+      const mockUser = {
+        _id: '123',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'patient'
+      };
+      return res.status(200).json({
+        success: true,
+        data: { user: mockUser }
+      });
+    }
+
+    res.status(404).json({ success: false, message: 'Auth endpoint not found' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
