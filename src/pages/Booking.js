@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/common/Card';
 import GlobalHeader from '../components/common/GlobalHeader';
@@ -30,7 +30,7 @@ const Booking = () => {
     if (formData.practitioner && formData.date) {
       fetchAvailableSlots();
     }
-  }, [formData.practitioner, formData.date]);
+  }, [formData.practitioner, formData.date, fetchAvailableSlots]);
 
   const fetchPractitioners = async () => {
     try {
@@ -74,7 +74,7 @@ const Booking = () => {
     }
   };
 
-  const fetchAvailableSlots = async () => {
+  const fetchAvailableSlots = useCallback(async () => {
     try {
       const response = await api.get(`/practitioners/available-slots?practitionerId=${formData.practitioner}&date=${formData.date}`);
       setAvailableSlots(response.data.data.availableSlots);
@@ -82,7 +82,7 @@ const Booking = () => {
       console.error('Error fetching available slots:', error);
       setAvailableSlots(TIME_SLOTS); // Fallback to all slots
     }
-  };
+  }, [formData.practitioner, formData.date]);
 
   const calculatePrice = () => {
     const therapy = therapies.find(t => t.name === formData.therapy || t._id === formData.therapy);
@@ -94,13 +94,7 @@ const Booking = () => {
     setLoading(true);
     
     try {
-      const appointmentData = {
-        practitioner: formData.practitioner,
-        therapy: formData.therapy,
-        date: formData.date,
-        timeSlot: formData.timeSlot,
-        notes: formData.notes
-      };
+
 
       const selectedTherapy = therapies.find(t => t.name === formData.therapy || t._id === formData.therapy);
       const bookingData = {
@@ -134,9 +128,7 @@ const Booking = () => {
     });
   };
 
-  const isSlotAvailable = (time) => {
-    return Math.random() > 0.3;
-  };
+
 
   return (
     <div className="min-h-screen bg-gray-50">

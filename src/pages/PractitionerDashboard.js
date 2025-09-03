@@ -298,8 +298,6 @@ const PractitionerDashboard = () => {
         return <PatientList patients={patients} />;
       case 'insights':
         return <InsightsPanel dashboardStats={dashboardStats} bookings={bookings} patients={patients} />;
-      case 'insights':
-        return <InsightsPanel dashboardStats={dashboardStats} bookings={bookings} patients={patients} />;
       default:
         return <div className="card">Dashboard</div>;
     }

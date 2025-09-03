@@ -6,11 +6,7 @@ import GlobalFooter from '../components/common/GlobalFooter';
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const [selectedTherapy, setSelectedTherapy] = useState(null);
-
-  const handleBookNow = (therapy, duration) => {
-    navigate('/booking', { state: { therapy, duration } });
-  };
+  // Removed unused variables
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ayur-light via-white to-ayur-accent/20">
@@ -51,7 +47,7 @@ const Pricing = () => {
                         ? 'border-ayur-primary bg-ayur-light shadow-md' 
                         : 'border-gray-200 hover:border-ayur-accent'
                     }`}
-                    onClick={() => setSelectedTherapy({ therapy: key, duration, price: details.price })}
+                    onClick={() => console.log('Selected:', key, duration)}
                   >
                     <div className="flex justify-between items-center">
                       <div>

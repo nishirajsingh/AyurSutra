@@ -17,7 +17,7 @@ const GoogleAuthSuccess = () => {
         login(token, user);
 
         // Check if user needs to complete profile
-        if (!user.phone || !user.role || user.role === 'patient' && !user.age) {
+        if (!user.phone || !user.role || (user.role === 'patient' && !user.age)) {
           navigate('/complete-profile');
         } else {
           // Redirect to appropriate dashboard
