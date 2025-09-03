@@ -39,6 +39,31 @@ const SignUp = () => {
     
     setIsLoading(true);
     
+    // Test API connectivity first
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+      console.log('Testing API connectivity to:', apiUrl);
+      
+      const testResponse = await fetch(`${apiUrl}/test`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!testResponse.ok) {
+        throw new Error(`Backend server responded with status: ${testResponse.status}`);
+      }
+      
+      const testData = await testResponse.json();
+      console.log('✅ API connectivity test passed:', testData);
+    } catch (connectError) {
+      console.error('❌ API connectivity test failed:', connectError);
+      alert(`Cannot connect to server at ${process.env.REACT_APP_API_URL || 'http://localhost:8000/api'}. Please ensure the backend is running.`);
+      setIsLoading(false);
+      return;
+    }
+    
     console.log('API URL:', process.env.REACT_APP_API_URL);
     console.log('Submitting registration data:', {
       name: `${formData.firstName} ${formData.lastName}`,
@@ -83,12 +108,19 @@ const SignUp = () => {
       console.error('Error response:', error.response);
       console.error('Error data:', error.response?.data);
       console.error('Error status:', error.response?.status);
-      console.error('Request data sent:', {
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        role: userType
-      });
-      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
+      
+      let errorMessage = 'Registration failed';
+      
+      if (error.code === 'NETWORK_ERROR' || error.message.includes('Network Error')) {
+        errorMessage = 'Network error: Cannot connect to server. Please check if the backend is running.';
+      } else if (error.code === 'ECONNREFUSED') {
+        errorMessage = 'Connection refused: Backend server is not running on http://localhost:8000';
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       alert(`Registration failed: ${errorMessage}`);
     } finally {
       setIsLoading(false);

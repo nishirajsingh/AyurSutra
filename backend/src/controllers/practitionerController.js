@@ -6,7 +6,7 @@ exports.getPractitioners = async (req, res, next) => {
     const practitioners = await User.find({ 
       role: 'practitioner', 
       isActive: true 
-    }).select('name email practitionerDetails');
+    }).select('name email specialization experience qualification consultationFee rating totalRatings');
 
     res.status(200).json({
       success: true,
@@ -26,7 +26,7 @@ exports.getPractitioner = async (req, res, next) => {
       _id: req.params.id,
       role: 'practitioner',
       isActive: true
-    }).select('name email practitionerDetails');
+    }).select('name email specialization experience qualification consultationFee rating totalRatings');
 
     if (!practitioner) {
       return res.status(404).json({
@@ -66,7 +66,13 @@ exports.getAvailableSlots = async (req, res, next) => {
     }).select('time');
 
     const bookedTimes = bookedSlots.map(booking => booking.time);
-    const availableSlots = practitioner.practitionerDetails.availability.filter(
+    
+    // Generate default time slots (9 AM to 6 PM)
+    const defaultSlots = [
+      '09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00'
+    ];
+    
+    const availableSlots = defaultSlots.filter(
       slot => !bookedTimes.includes(slot)
     );
 
@@ -120,7 +126,7 @@ exports.getDashboardStats = async (req, res, next) => {
       status: 'completed'
     });
 
-    const monthlyRevenue = monthlyBookings.reduce((sum, booking) => sum + booking.price, 0);
+    const monthlyRevenue = monthlyBookings.reduce((sum, booking) => sum + booking.amount, 0);
 
     // Recent patients
     const recentPatients = await Booking.find({
@@ -140,7 +146,7 @@ exports.getDashboardStats = async (req, res, next) => {
         todaySchedule: todayBookings,
         recentPatients: recentPatients.map(booking => ({
           patient: booking.patient,
-          therapy: booking.therapyType,
+          therapy: booking.therapy,
           date: booking.date
         }))
       }

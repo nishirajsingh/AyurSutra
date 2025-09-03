@@ -26,7 +26,7 @@ router.put('/profile', protect, updateProfile);
 
 // Google OAuth routes
 router.get('/google', googleAuth);
-router.get('/google/callback', require('../config/passport').authenticate('google', { failureRedirect: '/login' }), googleCallback);
+router.get('/google/callback', require('passport').authenticate('google', { failureRedirect: '/login' }), googleCallback);
 router.put('/complete-profile', protect, completeGoogleProfile);
 
 module.exports = router;

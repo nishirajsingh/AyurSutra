@@ -14,9 +14,11 @@ const app = express();
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.com'] 
-    : ['http://localhost:3000', 'http://localhost:3004', 'http://127.0.0.1:3000', 'http://127.0.0.1:3004'],
-  credentials: true
+    ? [process.env.FRONTEND_URL || 'https://your-vercel-app.vercel.app'] 
+    : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:8001', 'http://127.0.0.1:3000', 'http://127.0.0.1:8001'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 // Session middleware
 app.use(session({
@@ -40,9 +42,25 @@ app.use((req, res, next) => {
 });
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log(err));
+const connectDB = async () => {
+  try {
+    const mongoURI = process.env.MONGODB_URI || process.env.MONGODB_URL;
+    if (!mongoURI) {
+      throw new Error('MongoDB connection string not found in environment variables');
+    }
+    
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('✅ MongoDB connected successfully');
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error.message);
+    process.exit(1);
+  }
+};
+
+connectDB();
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -50,7 +68,17 @@ app.get('/health', (req, res) => {
     status: 'OK', 
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
+  });
+});
+
+// API test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'API is working correctly',
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -96,9 +124,15 @@ app.use((error, req, res, next) => {
 
 const PORT = process.env.PORT || 8001;
 
-app.listen(PORT, () => {
-  console.log(`🚀 AyurSutra Backend Server running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-  console.log(`📚 API Base URL: http://localhost:${PORT}/api`);
-});
+// Export for Vercel serverless functions
+module.exports = app;
+
+// Only start server if not in Vercel environment
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 AyurSutra Backend Server running on port ${PORT}`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+    console.log(`📚 API Base URL: http://localhost:${PORT}/api`);
+  });
+}

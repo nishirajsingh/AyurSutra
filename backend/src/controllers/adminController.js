@@ -28,7 +28,7 @@ exports.getDashboardStats = async (req, res, next) => {
       status: 'completed'
     });
 
-    const totalRevenue = monthlyBookings.reduce((sum, booking) => sum + booking.price, 0);
+    const totalRevenue = monthlyBookings.reduce((sum, booking) => sum + booking.amount, 0);
 
     // Recent transactions
     const recentTransactions = await Booking.find({
@@ -85,8 +85,8 @@ exports.getDashboardStats = async (req, res, next) => {
           id: booking._id,
           patient: booking.patient.name,
           practitioner: booking.practitioner.name,
-          amount: booking.price,
-          therapy: booking.therapyType,
+          amount: booking.amount,
+          therapy: booking.therapy,
           date: booking.date,
           status: booking.status,
           paymentMethod: booking.paymentMethod || 'UPI',

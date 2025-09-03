@@ -1,59 +1,59 @@
-# AyurSutra - Panchakarma Patient Management System
+# AyurSutra - Smart Online Appointment Booking System
 
-A full-stack web application for Ayurvedic practice management with patient booking, authentication, and therapy scheduling.
+A comprehensive Ayurvedic healthcare management system built with React.js and Node.js.
 
-## 🚀 Quick Start
+## Features
 
-### Prerequisites
-- Node.js (v16+)
-- MongoDB (local or Atlas)
+- **Patient Management**: Registration, profile management, appointment booking
+- **Practitioner Dashboard**: Schedule management, patient records, treatment plans
+- **Admin Panel**: User management, system analytics, revenue tracking
+- **Authentication**: JWT-based auth with Google OAuth integration
+- **Real-time Notifications**: Appointment reminders and updates
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
 
-### Setup
-1. **Clone & Install**
+## Tech Stack
+
+- **Frontend**: React.js, Tailwind CSS, Axios
+- **Backend**: Node.js, Express.js, MongoDB
+- **Authentication**: JWT, Passport.js, Google OAuth
+- **Database**: MongoDB with Mongoose ODM
+- **Deployment**: Vercel-ready configuration
+
+## Quick Start
+
+1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
-   cd ayursutra
-   npm install
-   cd backend && npm install && cd ..
+   git clone https://github.com/nishirajsingh/AyurSutra.git
+   cd AyurSutra
    ```
 
-2. **Configure Environment**
+2. **Install dependencies**
    ```bash
-   cd backend
-   cp .env.example .env
-   # Edit .env with your MongoDB URI and secrets
+   npm run setup
    ```
 
-3. **Start Application**
+3. **Start development servers**
    ```bash
-   # Terminal 1 - Backend
-   cd backend && npm run dev
+   # Backend (Terminal 1)
+   cd backend && npm start
    
-   # Terminal 2 - Frontend  
+   # Frontend (Terminal 2)
    npm start
    ```
 
-4. **Access**
+4. **Access the application**
    - Frontend: http://localhost:3000
-   - Backend: http://localhost:8000
+   - Backend API: http://localhost:8000/api
+   - Health Check: http://localhost:8000/health
 
-## 🔧 Environment Setup
+## Environment Setup
 
-Create `backend/.env` with:
-```env
-MONGODB_URI=mongodb://localhost:27017/ayursutra
-JWT_SECRET=your_32_character_secret_here
-SESSION_SECRET=your_32_character_secret_here
-```
+Create `.env` files in root and backend directories with required variables (see `.env.example` files).
 
-## 📱 Features
-- User authentication (signup/login)
-- Patient dashboard & booking
-- Practitioner management
-- MongoDB data persistence
-- Responsive design
+## Deployment
 
-## 🛠 Tech Stack
-- **Frontend**: React 18, Tailwind CSS
-- **Backend**: Node.js, Express, MongoDB
-- **Auth**: JWT, bcrypt, Passport.js
+Ready for deployment on Vercel with included `vercel.json` configuration.
+
+## License
+
+MIT License - see LICENSE file for details.

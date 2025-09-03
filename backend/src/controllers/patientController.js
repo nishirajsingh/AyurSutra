@@ -19,7 +19,7 @@ exports.getDashboardData = async (req, res, next) => {
       date: { $gte: today },
       status: { $in: ['pending', 'confirmed'] }
     })
-    .populate('practitioner', 'name practitionerDetails')
+    .populate('practitioner', 'name specialization')
     .sort({ date: 1, time: 1 })
     .limit(5);
 
@@ -51,7 +51,7 @@ exports.getDashboardData = async (req, res, next) => {
       data: {
         upcomingSessions: upcomingSessions.map(session => ({
           id: session._id,
-          therapy: session.therapyType,
+          therapy: session.therapy,
           date: session.date,
           time: session.time,
           practitioner: session.practitioner.name,

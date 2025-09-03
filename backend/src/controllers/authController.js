@@ -24,10 +24,28 @@ const createSendToken = (user, statusCode, res) => {
 
 exports.register = async (req, res, next) => {
   try {
+    console.log('Registration request received:', req.body);
+    
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
     const { 
       name, email, password, role, phone, address, dateOfBirth, gender, age,
       specialization, experience, qualification, licenseNumber, consultationFee
     } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, and password are required'
+      });
+    }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {

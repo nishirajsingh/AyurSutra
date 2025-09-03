@@ -3,7 +3,7 @@ const Notification = require('../models/Notification');
 exports.getNotifications = async (req, res, next) => {
   try {
     const notifications = await Notification.find({ user: req.user.id })
-      .populate('relatedBooking', 'therapyType date time')
+      .populate('relatedBooking', 'therapy date time')
       .sort({ createdAt: -1 })
       .limit(20);
 
