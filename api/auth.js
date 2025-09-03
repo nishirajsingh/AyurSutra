@@ -1,3 +1,20 @@
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const User = require('../backend/src/models/User');
+
+// Connect to MongoDB
+if (mongoose.connection.readyState === 0) {
+  mongoose.connect(process.env.MONGODB_URI || process.env.MONGODB_URL)
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.log('MongoDB error:', err));
+}
+
+const signToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret', {
+    expiresIn: '30d'
+  });
+};
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,48 +31,95 @@ module.exports = async (req, res) => {
 
     // Register endpoint
     if (url.includes('/register') && method === 'POST') {
-      const { name, email, password, role } = req.body || {};
-      const mockUser = {
-        _id: Date.now().toString(),
-        name: name || 'User',
-        email: email || 'user@example.com',
+      const { name, email, password, role, phone, address, dateOfBirth, gender, age } = req.body || {};
+      
+      if (!name || !email || !password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Name, email, and password are required'
+        });
+      }
+
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'User already exists with this email'
+        });
+      }
+
+      const userData = {
+        name,
+        email,
+        password,
         role: role || 'patient',
-        createdAt: new Date()
+        phone,
+        address,
+        dateOfBirth,
+        gender,
+        age
       };
+
+      const user = await User.create(userData);
+      user.lastLogin = new Date();
+      await user.save();
+
+      const token = signToken(user._id);
+      user.password = undefined;
+
       return res.status(201).json({
         success: true,
-        token: 'mock_token_' + Date.now(),
-        data: { user: mockUser }
+        token,
+        data: { user }
       });
     }
 
     // Login endpoint
     if (url.includes('/login') && method === 'POST') {
       const { email, password } = req.body || {};
-      const mockUser = {
-        _id: '123',
-        name: 'Test User',
-        email: email || 'test@example.com',
-        role: 'patient'
-      };
+      
+      if (!email || !password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please provide email and password'
+        });
+      }
+
+      const user = await User.findOne({ email }).select('+password');
+
+      if (!user || !(await user.comparePassword(password))) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid credentials'
+        });
+      }
+
+      user.lastLogin = new Date();
+      await user.save();
+
+      const token = signToken(user._id);
+      user.password = undefined;
+
       return res.status(200).json({
         success: true,
-        token: 'mock_token_login',
-        data: { user: mockUser }
+        token,
+        data: { user }
       });
     }
 
     // Get me endpoint
     if (url.includes('/me') && method === 'GET') {
-      const mockUser = {
-        _id: '123',
-        name: 'Test User',
-        email: 'test@example.com',
-        role: 'patient'
-      };
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      if (!token) {
+        return res.status(401).json({ success: false, message: 'No token provided' });
+      }
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+      const user = await User.findById(decoded.id);
+      
       return res.status(200).json({
         success: true,
-        data: { user: mockUser }
+        data: { user }
       });
     }
 
