@@ -33,8 +33,7 @@ const userSchema = new mongoose.Schema({
   dateOfBirth: Date,
   gender: {
     type: String,
-    enum: ['male', 'female', 'other'],
-    required: function() { return this.role === 'patient'; }
+    enum: ['male', 'female', 'other']
   },
   age: Number,
   // Practitioner fields
