@@ -1,5 +1,3 @@
-const jwt = require('jsonwebtoken');
-
 module.exports = (req, res) => {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -15,18 +13,20 @@ module.exports = (req, res) => {
   const { url, method } = req;
 
   // Test endpoint
-  if (url === '/api/test' || url === '/test') {
+  if (url.includes('/test')) {
     return res.status(200).json({
       success: true,
       message: 'API is working correctly',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      url: url,
+      method: method
     });
   }
 
   // Registration endpoint
-  if (url === '/api/auth/register' && method === 'POST') {
+  if (url.includes('/auth/register') && method === 'POST') {
     try {
-      const { name, email, password, role } = req.body;
+      const { name, email, password, role } = req.body || {};
       
       if (!name || !email || !password) {
         return res.status(400).json({
@@ -35,7 +35,7 @@ module.exports = (req, res) => {
         });
       }
 
-      // Mock user creation (replace with actual database logic later)
+      // Mock user creation
       const mockUser = {
         _id: Date.now().toString(),
         name,
@@ -44,12 +44,8 @@ module.exports = (req, res) => {
         createdAt: new Date()
       };
 
-      // Generate JWT token
-      const token = jwt.sign(
-        { id: mockUser._id }, 
-        process.env.JWT_SECRET || 'fallback_secret',
-        { expiresIn: '30d' }
-      );
+      // Generate simple token
+      const token = 'mock_token_' + Date.now();
 
       return res.status(201).json({
         success: true,
@@ -69,7 +65,9 @@ module.exports = (req, res) => {
   // Default response
   res.status(200).json({
     success: true,
-    message: 'AyurSutra API',
-    availableEndpoints: ['/api/test', '/api/auth/register']
+    message: 'AyurSutra API is running',
+    url: url,
+    method: method,
+    timestamp: new Date().toISOString()
   });
 };
