@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const User = require('../backend/src/models/User');
+const bcrypt = require('bcryptjs');
 
 // Connect to MongoDB
 if (mongoose.connection.readyState === 0) {
@@ -8,6 +8,34 @@ if (mongoose.connection.readyState === 0) {
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.log('MongoDB error:', err));
 }
+
+// User Schema
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ['patient', 'practitioner', 'admin'], default: 'patient' },
+  phone: String,
+  address: String,
+  dateOfBirth: Date,
+  gender: String,
+  age: Number,
+  isActive: { type: Boolean, default: true },
+  lastLogin: Date,
+  createdAt: { type: Date, default: Date.now }
+});
+
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
+
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret', {
@@ -31,7 +59,7 @@ module.exports = async (req, res) => {
 
     // Register endpoint
     if (url.includes('/register') && method === 'POST') {
-      const { name, email, password, role, phone, address, dateOfBirth, gender, age } = req.body || {};
+      const { name, email, password, role } = req.body || {};
       
       if (!name || !email || !password) {
         return res.status(400).json({
@@ -48,29 +76,19 @@ module.exports = async (req, res) => {
         });
       }
 
-      const userData = {
+      const user = await User.create({
         name,
         email,
         password,
-        role: role || 'patient',
-        phone,
-        address,
-        dateOfBirth,
-        gender,
-        age
-      };
-
-      const user = await User.create(userData);
-      user.lastLogin = new Date();
-      await user.save();
+        role: role || 'patient'
+      });
 
       const token = signToken(user._id);
-      user.password = undefined;
 
       return res.status(201).json({
         success: true,
         token,
-        data: { user }
+        data: { user: { _id: user._id, name: user.name, email: user.email, role: user.role } }
       });
     }
 

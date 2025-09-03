@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const Booking = require('../backend/src/models/Booking');
-const User = require('../backend/src/models/User');
 
 // Connect to MongoDB
 if (mongoose.connection.readyState === 0) {
@@ -9,6 +7,31 @@ if (mongoose.connection.readyState === 0) {
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.log('MongoDB error:', err));
 }
+
+// User Schema
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  role: { type: String, enum: ['patient', 'practitioner', 'admin'], default: 'patient' }
+});
+
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+// Booking Schema
+const bookingSchema = new mongoose.Schema({
+  patient: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  practitioner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  therapy: { type: String, required: true },
+  date: { type: Date, required: true },
+  time: { type: String, required: true },
+  duration: { type: Number, default: 60 },
+  amount: { type: Number, required: true },
+  status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },
+  notes: String,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Booking = mongoose.models.Booking || mongoose.model('Booking', bookingSchema);
 
 const getUser = async (req) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
