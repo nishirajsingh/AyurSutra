@@ -2,6 +2,7 @@
   "name": "ayursutra",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "scripts": {
     "dev": "react-scripts start",
     "start": "react-scripts start",
